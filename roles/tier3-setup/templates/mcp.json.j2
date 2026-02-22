@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "memory": {
+      "version": "0.3.0",
+      "autoUpdate": false,
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory@0.3.0"]
+    },
+    "playwright": {
+      "autoUpdate": false,
+      "command": "npx",
+      "args": ["@playwright/mcp", "--headless"]
+    }
+  },
+  
+  "disabledServers": {
+    "filesystem": "Too risky - full filesystem access",
+    "shell": "Never enable - direct shell execution",
+    "ssh": "Never enable - remote command execution",
+    "docker": "Never enable - root escalation risk"
+  }
+}
