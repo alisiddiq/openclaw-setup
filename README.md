@@ -20,7 +20,7 @@ Copy the contents of the public key, will be a file ending in `.pub` in the `~/.
 4. Create a new resource
    - Use Regular Performance
    - CPX32 (8GB, 4VCPUs)
-   - Location Helsinki
+   - Location, whatever is cheapest (I chose Helsinki)
    - Use Ubuntu
    - In SSH keys section, add a ssh key, copy and paste the contents of your public key in here (copied from step 0)
    - Leave everything else the same
