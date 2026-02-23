@@ -90,7 +90,7 @@ It will print out some success message with key info including:
 # 6. Post deployment steps
 
 1. Make sure your local device is also on the tailnet
-2. Access the dashboard at `https://<FULL_DNS>:18789` e.g. `https://ubuntu-8gb-hel1-2.tailae3453.ts.net:18789`
+2. Access the dashboard using the URL obtained in the previous step
 3. This should open the openclaw dashboard with an error message saying `disconnected (1008): unauthorized: gateway token missing (open the dashboard URL and paste the token in Control UI settings)`
 4. Get the openclaw token
    - Login to the server as openclaw using the ssh command that was printed after the successful deployment, something like `ssh -i ssh-keys/gigabyte-seclusion-battery.pem openclaw@<IP_ADDRESS>`

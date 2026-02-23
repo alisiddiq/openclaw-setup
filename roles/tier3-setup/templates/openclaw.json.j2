@@ -18,13 +18,11 @@
       "allowedOrigins": [
         "https://{{ groups['all'][0] }}:18789",
         "https://{{ target_hostname }}:18789",
-        "https://{{ ansible_facts['hostname'] }}:18789",
         "https://localhost:18789",
         "http://localhost:18789",
         "http://127.0.0.1:18789",
         "https://127.0.0.1:18789",
-        "https://{{ ansible_facts['hostname'] }}.{{ tailscale_tailnet }}:18789",
-        "https://{{ target_hostname }}.{{ tailscale_tailnet }}:18789"
+        "https://{{ tailscale_fqdn }}:18789"
       ]
     },
     "auth": {
