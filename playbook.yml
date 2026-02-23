@@ -175,13 +175,18 @@
     - name: Setup Tailscale HTTPS proxy for dashboard
       command: tailscale serve --bg --https=18789 http://127.0.0.1:18789
 
+    - name: Get Tailscale DNS name
+      shell: tailscale status --json | python3 -c "import sys,json; print(json.load(sys.stdin)['Self']['DNSName'].rstrip('.'))"
+      register: tailscale_fqdn
+      changed_when: false
+
     - name: Final Success Message
       debug:
-        msg: 
+        msg:
           - "✅ Podman Deployment Complete!"
           - "🔑 Private Key saved locally to: ssh-keys/{{ target_hostname }}.pem"
           - "🖥️  New Hostname: {{ target_hostname }}"
-          - "🌐 Dashboard: https://{{ ansible_facts['hostname'] }}.{{ tailscale_tailnet }}:18789"
+          - "🌐 Dashboard: https://{{ tailscale_fqdn.stdout }}:18789"
           - "🌐 Connect using: ssh -i ssh-keys/{{ target_hostname }}.pem {{ openclaw_user }}@{{ inventory_hostname }}"
           - "🤖 LLM Provider: {{ llm_provider }} | Model: {{ llm_model }}"
           - "⚠️  Password authentication has been DISABLED."

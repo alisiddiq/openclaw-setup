@@ -114,11 +114,13 @@
 - name: Authenticate Tailscale
   command: tailscale up --authkey={{ tailscale_key }}
 
-- name: Get Tailscale tailnet suffix
-  shell: tailscale status --json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['Self']['DNSName'].split('.', 1)[1].rstrip('.'))"
+- name: Get Tailscale DNS info
+  shell: tailscale status --json | python3 -c "import sys,json; d=json.load(sys.stdin); fqdn=d['Self']['DNSName'].rstrip('.'); print(fqdn); print(fqdn.split('.', 1)[1]); print(fqdn.split('.', 1)[0])"
   register: tailscale_dns_result
   changed_when: false
 
-- name: Set tailscale_tailnet fact
+- name: Set Tailscale facts
   set_fact:
-    tailscale_tailnet: "{{ tailscale_dns_result.stdout }}"
+    tailscale_fqdn: "{{ tailscale_dns_result.stdout_lines[0] }}"
+    tailscale_tailnet: "{{ tailscale_dns_result.stdout_lines[1] }}"
+    tailscale_hostname: "{{ tailscale_dns_result.stdout_lines[2] }}"
