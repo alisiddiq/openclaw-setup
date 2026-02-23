@@ -49,19 +49,19 @@
   when: not existing_env_file.failed
 
 - name: Generate LiteLLM Master Key (if missing)
-  command: "openssl rand -base64 32"
+  command: "openssl rand -hex 32"
   register: litellm_master_key_gen
   when: existing_master_key | default('') | length == 0
 
 - name: Generate OpenClaw Gateway Token (if missing)
-  command: "openssl rand -base64 32"
+  command: "openssl rand -hex 32"
   register: openclaw_token_gen
   when: existing_openclaw_token | default('') | length == 0
 
 - name: Set Final Secrets
   set_fact:
-    litellm_key: "{{ existing_master_key if (existing_master_key | length > 0) else litellm_master_key_gen.stdout }}"
-    openclaw_token: "{{ existing_openclaw_token if (existing_openclaw_token | length > 0) else openclaw_token_gen.stdout }}"
+    litellm_key: "{{ existing_master_key if (existing_master_key | default('') | length > 0) else litellm_master_key_gen.stdout }}"
+    openclaw_token: "{{ existing_openclaw_token if (existing_openclaw_token | default('') | length > 0) else openclaw_token_gen.stdout }}"
 
 - name: Create .env file for Compose
   template:
@@ -222,7 +222,9 @@
     mode: '0600'
 
 - name: Reset Tailscale serve
-  command: tailscale serve --https 18789 off
+  command: tailscale serve --https=18789 off
+  become: true
+  become_user: root
   ignore_errors: true
 
 - name: Stop Existing Stack (Clean State)
@@ -320,7 +322,9 @@
     var: podman_ps_result.stdout_lines
   
 - name: Setup Tailscale HTTPS proxy for dashboard
-  command: tailscale serve --bg --https 18789 http://127.0.0.1:18789
+  command: tailscale serve --bg --https=18789 http://127.0.0.1:18789
+  become: true
+  become_user: root
   register: tailscale_serve_result
   changed_when: "'Available within your tailnet' in tailscale_serve_result.stdout or tailscale_serve_result.rc == 0"
   failed_when: false

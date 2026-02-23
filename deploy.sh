@@ -16,6 +16,7 @@ show_help() {
     echo "  --github-token TOKEN  GitHub Personal Access Token (for github skill)"
     echo "  --github-user USER    GitHub Username (for github skill)"
     echo "  --agentmail-key KEY   AgentMail API Key (for agentmail skill)"
+    echo "  --tailnet SUFFIX      Tailscale tailnet suffix (e.g., tailae3696.ts.net)"
     echo "  --ask-pass            Ask for SSH and Sudo passwords"
     echo "  --non-interactive     Fail if missing arguments instead of prompting"
     echo "  -h, --help            Show this help message"
@@ -35,6 +36,7 @@ SSH_KEY=""
 GITHUB_TOKEN=""
 GITHUB_USER=""
 AGENTMAIL_KEY=""
+TAILSCALE_TAILNET=""
 
 # Parse Arguments
 while [[ "$#" -gt 0 ]]; do
@@ -49,6 +51,7 @@ while [[ "$#" -gt 0 ]]; do
         --github-token) GITHUB_TOKEN="$2"; shift ;;
         --github-user) GITHUB_USER="$2"; shift ;;
         --agentmail-key) AGENTMAIL_KEY="$2"; shift ;;
+        --tailnet) TAILSCALE_TAILNET="$2"; shift ;;
         --ask-pass) ASK_PASS=true ;;
         --non-interactive) INTERACTIVE=false ;;
         -h|--help) show_help; exit 0 ;;
@@ -126,6 +129,13 @@ if [ "$INTERACTIVE" = true ]; then
         fi
     fi
 
+    # Tailscale Tailnet
+    if [ -z "$TAILSCALE_TAILNET" ]; then
+        echo ""
+        echo "Enter your Tailscale tailnet suffix (found via 'tailscale dns status' on any device):"
+        read -p "Tailnet suffix: " TAILSCALE_TAILNET
+    fi
+
     # API Key (Conditional)
     if [ -z "$LLM_KEY" ]; then
         if [ "$LLM_PROVIDER" != "ollama" ]; then
@@ -142,6 +152,11 @@ fi
 
 if [ -z "$TARGET_IP" ]; then
     echo "Error: Target IP is required."
+    exit 1
+fi
+
+if [ -z "$TAILSCALE_TAILNET" ]; then
+    echo "Error: Tailscale tailnet suffix is required (--tailnet)."
     exit 1
 fi
 
@@ -207,7 +222,7 @@ if [ ! -z "$SSH_KEY" ]; then
 fi
 
 ansible-playbook -i "$TEMP_INVENTORY" playbook.yml $ANSIBLE_ARGS \
-    --extra-vars "llm_provider='$LLM_PROVIDER' llm_model='$LLM_MODEL' llm_url='$LLM_URL' llm_key='$LLM_KEY' github_token='$GITHUB_TOKEN' github_user='$GITHUB_USER' agentmail_key='$AGENTMAIL_KEY'"
+    --extra-vars "llm_provider='$LLM_PROVIDER' llm_model='$LLM_MODEL' llm_url='$LLM_URL' llm_key='$LLM_KEY' github_token='$GITHUB_TOKEN' github_user='$GITHUB_USER' agentmail_key='$AGENTMAIL_KEY' tailscale_tailnet='$TAILSCALE_TAILNET'"
 
 # Cleanup
 rm "$TEMP_INVENTORY"

@@ -1,183 +1,137 @@
 # OpenClaw Hardened Deployment (Ansible)
 
-Based on [Next-Kick/openclaw-hardened-ansible](https://github.com/Next-Kick/openclaw-hardened-ansible) with additional adjustments for Tailscale access, skill installation, and provider-conditional routing.
+Based on [Next-Kick/openclaw-hardened-ansible](https://github.com/Next-Kick/openclaw-hardened-ansible) with additional adjustments for Tailscale access, skill installation, and LiteLLM proxy routing.
 
-## Step 1: Install Ansible
+# Set up local ssh keys
 
-Ansible runs on your local machine and configures the server remotely.
+From terminal
+
+`ssh-keygen`
+
+Use all defualt settings, this will create a key in `~/.ssh` folder
+
+Copy the contents of the public key, will be a file ending in `.pub` in the `~/.ssh` folder
+
+# 1. Spin up a VCS
+
+1. Sign up to Hetzner https://www.hetzner.com/
+2. Once signed up go to the console https://console.hetzner.com/
+3. Start a new project
+4. Create a new resource
+   - Use Regular Performance
+   - CPX32 (8GB, 4VCPUs)
+   - Location Helsinki
+   - Use Ubuntu
+   - In SSH keys section, add a ssh key, copy and paste the contents of your public key in here
+   - Leave everything else the same
+5. This will spin up a new server for you, copy its IP address
+
+
+Test it by using command `ssh root@<IP_ADDRESS>`
+
+You should be able to login using yours ssh keys (password not needed)
+
+
+# 2. Tailscale set up
+
+- Sign up to https://tailscale.com/
+- Create an account 
+- Go to admin console -> DNS -> Tailnet DNS Name, note that down, will be something like `tailae3453.ts.net`
+- Download the app locally, and add your local device to your network
+
+# Skills setup
+
+Highly recommended, but not necessary, also I have not tested this without these skills
+
+- Agentmail, give your its own email address, just sign up and note down the api key
+- github, again sign up, and generate a PAT token from github that gives the agent full access to admin the repos
+
+# Local setup
+
+1. Clone this repo
+2. Make sure you have Ansible locally
 
 **macOS:**
 ```bash
 brew install ansible
 ```
-
-**Ubuntu/Debian:**
-```bash
-sudo apt update
-sudo apt install -y ansible
-```
-
 **Pip (any OS with Python):**
 ```bash
 pip install ansible
 ```
 
-Verify it's installed:
-```bash
-ansible --version
+# Build and set up the server
+
+
+```aiignore
+git clone <this-repo>
+cd openclaw-setup
+chmod +x deploy.sh
+
+⏺ ./deploy.sh \                                                                                                                                                                                                                                                                                                          
+    --target <SERVER_IP> \                                                                                                                                                                                                                                                                                               
+    --ssh-user root \                                                                                                                                                                                                                                                                                                    
+    --ssh-key ~/.ssh/<PRIVATE_SSH_KEY_FILE_NAME> \                                                                                                                                                                                                                                                                                        
+    --provider anthropic \                                                                                                                                                                                                                                                                                               
+    --model claude-opus-4-6 \                                                                                                                                                                                                                                                                                            
+    --key <ANTHROPIC_API_KEY> \
+    --tailnet <TAILNET_DNS_NAME (from step 2)> \                                                                                                                                                                                                                                                                                        
+    --github-token <GITHUB_PAT> \                                                                                                                                                                                                                                                                                        
+    --github-user <GITHUB_USERNAME> \
+    --agentmail-key <AGENTMAIL_API_KEY>
 ```
 
-## Step 2: Generate an SSH Key
+This will print out some success message with key info, copy the line that looks like 
 
-An SSH key lets your machine connect to the server securely without a password. Skip this if you already have one at `~/.ssh/id_ed25519`.
+`🌐 Connect using: ssh -i ssh-keys/<SOME_RANDOM_WORDS>.pem openclaw@<IP_ADDRESS>`
 
-```bash
-ssh-keygen -t ed25519 -C "your-email@example.com"
-```
+You will need the above ssh command later
 
-When prompted:
-- **File location**: press Enter to accept the default (`~/.ssh/id_ed25519`)
-- **Passphrase**: press Enter for no passphrase (or set one if you prefer)
+Add the server to your tailscale network
 
-This creates two files:
-- `~/.ssh/id_ed25519` — your **private key** (never share this)
-- `~/.ssh/id_ed25519.pub` — your **public key** (this goes on the server)
-
-## Step 3: Copy Your Key to the Server
-
-The server needs your public key so it lets you connect without a password:
-
-```bash
-ssh-copy-id root@<SERVER_IP>
-```
-
-You'll be asked for the server's root password once. After this, password-free login is set up.
-
-Test it works:
-```bash
-ssh root@<SERVER_IP>
-```
-
-If you get in without a password prompt, you're good. Type `exit` to disconnect.
-
-## Step 4: Install Tailscale
-
-Tailscale creates a private network between your devices. The OpenClaw dashboard is only accessible through Tailscale — it's never exposed to the public internet.
-
-### Create an account
-
-Go to [https://login.tailscale.com/start](https://login.tailscale.com/start) and sign up (free for personal use).
-
-### Install on your local machine
-
-macOS:
-```bash
-brew install tailscale
-```
-Or download from [https://tailscale.com/download/mac](https://tailscale.com/download/mac).
-
-Ubuntu/Debian:
-```bash
-curl -fsSL https://tailscale.com/install.sh | sh
+```aiignore
+ssh root@<IP_ADDRESS>
 sudo tailscale up
 ```
 
-Windows: Download from [https://tailscale.com/download/windows](https://tailscale.com/download/windows).
+This will bring up a login link, login to your account and authorize to add the server to your network
 
-### Install on your server
+Note down the hostname of the server
 
-```bash
-ssh root@<SERVER_IP>
-curl -fsSL https://tailscale.com/install.sh | sh
-tailscale up
+`tailscale dns status`
+
+This will print something like ...
+
+```aiignore
+MagicDNS: enabled tailnet-wide (suffix = tailae3453.ts.net)
+
+Other devices in your tailnet can reach this device at ubuntu-8gb-hel1-2.tailae3453.ts.net.
 ```
 
-Follow the link it prints to authorize the machine in your Tailscale admin console. Type `exit` to return to your local machine.
+Note down the `ubuntu-8gb-hel1-2.tailae3453.ts.net` 
 
-### Verify
+# Post deployment steps
 
-Open [https://login.tailscale.com/admin/machines](https://login.tailscale.com/admin/machines) — you should see both your local machine and the server listed.
 
-## Step 5: Deploy
+1. Make sure your local device is also on the tailnet
+   - Download tailscale app for your device
+   - Login
+   - Add it to the network
+3. Access the dashboard at `https://<FULL_DNS>:18789` e.g. `https://ubuntu-8gb-hel1-2.tailae3453.ts.net:18789`
+4. This should open the openclaw dashboard with an error message saying `disconnected (1008): unauthorized: gateway token missing (open the dashboard URL and paste the token in Control UI settings)`
+5. Get the openclaw token
+   - Login to the server as openclaw using the ssh command that was printed after the successful deployment, something like `ssh -i ssh-keys/gigabyte-seclusion-battery.pem openclaw@<IP_ADDRESS>`
+   - Run the command `podman exec openclaw-agent openclaw config get gateway.auth.token`
+   - Copy this token
+6. Paste it in the dashboard `Overview -> Gateway Access -> Gateway Token`
+7. Now you need to pair your machine with openclaw
+   - Login to the server as openclaw using the ssh command that was printed after the successful deployment, something like `ssh -i ssh-keys/gigabyte-seclusion-battery.pem openclaw@<IP_ADDRESS>`
+   - Run the command `podman exec openclaw-agent openclaw devices list --json`
+   - This will list all the device requests for the dashboard, copy the requestId for your machine
+   - Then run `podman exec openclaw-agent openclaw devices approve <REQUEST_ID> --profile operator` to approve
 
-```bash
-git clone <this-repo>
-cd openclaw-hardened-ansible
-chmod +x deploy.sh
-```
 
-Interactive mode (prompts for everything):
-```bash
-./deploy.sh
-```
+This should now make your agent come alive and you can use it to set the rest of the things
 
-Or pass everything on the command line:
-```bash
-./deploy.sh \
-  --target <SERVER_IP> \
-  --ssh-user root \
-  --ssh-key ~/.ssh/id_ed25519 \
-  --provider anthropic \
-  --model claude-opus-4-6 \
-  --key <ANTHROPIC_API_KEY> \
-  --github-token <GITHUB_PAT> \
-  --github-user <GITHUB_USERNAME> \
-  --agentmail-key <AGENTMAIL_API_KEY> \
-  --non-interactive
-```
-
-The `--github-token`, `--github-user`, and `--agentmail-key` flags are optional. Only include them if you have the keys.
-
-The first deploy takes 5-10 minutes (building the container image). Subsequent deploys are faster.
-
-## Step 6: Access the Dashboard
-
-The dashboard is only accessible via your Tailscale network. Open in your browser:
-
-```
-https://<hostname>.tailXXXXXX.ts.net:18789
-```
-
-You can find the hostname in the [Tailscale admin console](https://login.tailscale.com/admin/machines).
-
-Get your gateway token to log in:
-```bash
-ssh openclaw@<SERVER_IP> "cat ~/openclaw-docker/.env | grep OPENCLAW_GATEWAY_TOKEN"
-```
-
-Paste this token into the dashboard when prompted.
-
-## Step 7: Approve Your Device
-
-The first time you connect from a new browser, you need to approve it from the server. This prevents unauthorized access even if someone has the token.
-
-SSH into the server:
-```bash
-ssh openclaw@<SERVER_IP>
-```
-
-List pending devices and approve yours:
-```bash
-podman exec openclaw-agent openclaw devices list
-podman exec openclaw-agent openclaw devices approve --device <DEVICE_ID> --role operator
-```
-
-Refresh the browser and you should be in.
-
-## Troubleshooting
-
-**"Permission denied" when SSHing:**
-Your SSH key isn't on the server. Run `ssh-copy-id root@<IP>` or use `--ask-pass` with the deploy script.
-
-**Dashboard not loading:**
-Make sure Tailscale is running on both your local machine and the server. The dashboard is only accessible via Tailscale, not the public IP.
-
-**"pairing required" in the dashboard:**
-You need to approve your device from the server CLI. See Step 7.
-
-**Agent not responding to messages:**
-Check the agent logs: `podman logs openclaw-agent`. Verify your API key is correct and the model name matches your provider.
-
-## License
-
-Provided as-is. OpenClaw with LLMs carries inherent prompt injection risks. Use dedicated accounts and API keys with minimal permissions.
+- Ask it to set telegram
+- Ask it to set its email account
