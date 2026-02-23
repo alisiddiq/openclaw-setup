@@ -112,19 +112,15 @@ Note down the `ubuntu-8gb-hel1-2.tailae3453.ts.net`
 
 # 6. Post deployment steps
 
-
 1. Make sure your local device is also on the tailnet
-   - Download tailscale app for your device
-   - Login
-   - Add it to the network
-3. Access the dashboard at `https://<FULL_DNS>:18789` e.g. `https://ubuntu-8gb-hel1-2.tailae3453.ts.net:18789`
-4. This should open the openclaw dashboard with an error message saying `disconnected (1008): unauthorized: gateway token missing (open the dashboard URL and paste the token in Control UI settings)`
-5. Get the openclaw token
+2. Access the dashboard at `https://<FULL_DNS>:18789` e.g. `https://ubuntu-8gb-hel1-2.tailae3453.ts.net:18789`
+3. This should open the openclaw dashboard with an error message saying `disconnected (1008): unauthorized: gateway token missing (open the dashboard URL and paste the token in Control UI settings)`
+4. Get the openclaw token
    - Login to the server as openclaw using the ssh command that was printed after the successful deployment, something like `ssh -i ssh-keys/gigabyte-seclusion-battery.pem openclaw@<IP_ADDRESS>`
    - Run the command `podman exec openclaw-agent openclaw config get gateway.auth.token`
    - Copy this token
-6. Paste it in the dashboard `Overview -> Gateway Access -> Gateway Token`
-7. Now you need to pair your machine with openclaw
+5. Paste it in the dashboard `Overview -> Gateway Access -> Gateway Token`
+6. Now you need to pair your machine with openclaw
    - Login to the server as openclaw using the ssh command that was printed after the successful deployment, something like `ssh -i ssh-keys/gigabyte-seclusion-battery.pem openclaw@<IP_ADDRESS>`
    - Run the command `podman exec openclaw-agent openclaw devices list --json`
    - This will list all the device requests for the dashboard, copy the requestId for your machine
