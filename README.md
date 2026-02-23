@@ -2,7 +2,7 @@
 
 Based on [Next-Kick/openclaw-hardened-ansible](https://github.com/Next-Kick/openclaw-hardened-ansible) with additional adjustments for Tailscale access, skill installation, and LiteLLM proxy routing.
 
-# Set up local ssh keys
+# 0. Set up local ssh keys
 
 From terminal
 
@@ -20,9 +20,9 @@ Copy the contents of the public key, will be a file ending in `.pub` in the `~/.
 4. Create a new resource
    - Use Regular Performance
    - CPX32 (8GB, 4VCPUs)
-   - Location Helsinki
+   - Location, whatever is cheapest (I chose Helsinki)
    - Use Ubuntu
-   - In SSH keys section, add a ssh key, copy and paste the contents of your public key in here
+   - In SSH keys section, add a ssh key, copy and paste the contents of your public key in here (copied from step 0)
    - Leave everything else the same
 5. This will spin up a new server for you, copy its IP address
 
@@ -39,14 +39,14 @@ You should be able to login using yours ssh keys (password not needed)
 - Go to admin console -> DNS -> Tailnet DNS Name, note that down, will be something like `tailae3453.ts.net`
 - Download the app locally, and add your local device to your network
 
-# Skills setup
+# 3. Skills setup
 
 Highly recommended, but not necessary, also I have not tested this without these skills
 
 - Agentmail, give your its own email address, just sign up and note down the api key
 - github, again sign up, and generate a PAT token from github that gives the agent full access to admin the repos
 
-# Local setup
+# 4. Local setup
 
 1. Clone this repo
 2. Make sure you have Ansible locally
@@ -60,7 +60,7 @@ brew install ansible
 pip install ansible
 ```
 
-# Build and set up the server
+# 5. Build and set up the server
 
 
 ```aiignore
@@ -68,10 +68,10 @@ git clone <this-repo>
 cd openclaw-setup
 chmod +x deploy.sh
 
-⏺ ./deploy.sh \                                                                                                                                                                                                                                                                                                          
+./deploy.sh \                                                                                                                                                                                                                                                                                                          
     --target <SERVER_IP> \                                                                                                                                                                                                                                                                                               
     --ssh-user root \                                                                                                                                                                                                                                                                                                    
-    --ssh-key ~/.ssh/<PRIVATE_SSH_KEY_FILE_NAME> \                                                                                                                                                                                                                                                                                        
+    --ssh-key ~/.ssh/<PRIVATE_SSH_KEY_FILE_NAME (from step 0)> \                                                                                                                                                                                                                                                                                        
     --provider anthropic \                                                                                                                                                                                                                                                                                               
     --model claude-opus-4-6 \                                                                                                                                                                                                                                                                                            
     --key <ANTHROPIC_API_KEY> \
@@ -110,21 +110,17 @@ Other devices in your tailnet can reach this device at ubuntu-8gb-hel1-2.tailae3
 
 Note down the `ubuntu-8gb-hel1-2.tailae3453.ts.net` 
 
-# Post deployment steps
-
+# 6. Post deployment steps
 
 1. Make sure your local device is also on the tailnet
-   - Download tailscale app for your device
-   - Login
-   - Add it to the network
-3. Access the dashboard at `https://<FULL_DNS>:18789` e.g. `https://ubuntu-8gb-hel1-2.tailae3453.ts.net:18789`
-4. This should open the openclaw dashboard with an error message saying `disconnected (1008): unauthorized: gateway token missing (open the dashboard URL and paste the token in Control UI settings)`
-5. Get the openclaw token
+2. Access the dashboard at `https://<FULL_DNS>:18789` e.g. `https://ubuntu-8gb-hel1-2.tailae3453.ts.net:18789`
+3. This should open the openclaw dashboard with an error message saying `disconnected (1008): unauthorized: gateway token missing (open the dashboard URL and paste the token in Control UI settings)`
+4. Get the openclaw token
    - Login to the server as openclaw using the ssh command that was printed after the successful deployment, something like `ssh -i ssh-keys/gigabyte-seclusion-battery.pem openclaw@<IP_ADDRESS>`
    - Run the command `podman exec openclaw-agent openclaw config get gateway.auth.token`
    - Copy this token
-6. Paste it in the dashboard `Overview -> Gateway Access -> Gateway Token`
-7. Now you need to pair your machine with openclaw
+5. Paste it in the dashboard `Overview -> Gateway Access -> Gateway Token`
+6. Now you need to pair your machine with openclaw
    - Login to the server as openclaw using the ssh command that was printed after the successful deployment, something like `ssh -i ssh-keys/gigabyte-seclusion-battery.pem openclaw@<IP_ADDRESS>`
    - Run the command `podman exec openclaw-agent openclaw devices list --json`
    - This will list all the device requests for the dashboard, copy the requestId for your machine
@@ -133,5 +129,6 @@ Note down the `ubuntu-8gb-hel1-2.tailae3453.ts.net`
 
 This should now make your agent come alive and you can use it to set the rest of the things
 
+- Give your bot a persona
 - Ask it to set telegram
 - Ask it to set its email account
