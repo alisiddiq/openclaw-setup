@@ -18,7 +18,7 @@ services:
     command: ["--config", "/app/config.yaml", "--port", "4000"]
     security_opt:
       - no-new-privileges:true
-    mem_limit: 512m
+    mem_limit: 1g
     cpus: 1.0
 
   squid:
@@ -41,7 +41,7 @@ services:
     container_name: openclaw-agent
     restart: unless-stopped
     ports:
-      - "127.0.0.1:18789:18789"
+      - "0.0.0.0:18789:18789"
     networks:
       - openclaw-internal
       - openclaw-external
@@ -55,7 +55,7 @@ services:
     env_file: .env
     environment:
       - NODE_ENV=production
-      - ANTHROPIC_API_KEY=${TARGET_LLM_KEY}
+      - ANTHROPIC_API_KEY=${LITELLM_MASTER_KEY}
       - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
       - OPENCLAW_GATEWAY_CERT=/home/node/.openclaw/gateway.crt
       - OPENCLAW_GATEWAY_KEY=/home/node/.openclaw/gateway.key

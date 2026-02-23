@@ -18,11 +18,13 @@
       "allowedOrigins": [
         "https://{{ groups['all'][0] }}:18789",
         "https://{{ target_hostname }}:18789",
+        "https://{{ ansible_hostname }}:18789",
         "https://localhost:18789",
         "http://localhost:18789",
         "http://127.0.0.1:18789",
         "https://127.0.0.1:18789",
-        "https://{{ target_hostname }}.tailae3696.ts.net:18789"
+        "https://{{ ansible_hostname }}.{{ tailscale_tailnet }}:18789",
+        "https://{{ target_hostname }}.{{ tailscale_tailnet }}:18789"
       ]
     },
     "auth": {
@@ -36,9 +38,8 @@
   "models": {
     "mode": "merge",
     "providers": {
-{% if llm_provider == 'anthropic' %}
       "anthropic": {
-        "baseUrl": "https://api.anthropic.com",
+        "baseUrl": "http://litellm:4000",
         "apiKey": "${ANTHROPIC_API_KEY}",
         "api": "anthropic-messages",
         "models": [
@@ -53,24 +54,6 @@
           }
         ]
       }
-{% else %}
-      "anthropic": {
-        "baseUrl": "http://litellm:4000",
-        "apiKey": "${ANTHROPIC_API_KEY}",
-        "api": "anthropic-messages",
-        "models": [
-          {
-            "id": "{{ llm_model }}",
-            "name": "{{ llm_model }}",
-            "reasoning": false,
-            "input": ["text", "image"],
-            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
-            "contextWindow": 200000,
-            "maxTokens": 4096
-          }
-        ]
-      }
-{% endif %}
     }
   },
   "channels": {

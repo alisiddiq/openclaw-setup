@@ -158,6 +158,9 @@
     github_user: "{{ github_user | default('') }}"
     agentmail_key: "{{ agentmail_key | default('') }}"
 
+    # Tailscale Configuration
+    tailscale_tailnet: "{{ tailscale_tailnet }}"
+
   roles:
     - tier3-setup
 
