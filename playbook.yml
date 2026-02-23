@@ -159,7 +159,7 @@
     agentmail_key: "{{ agentmail_key | default('') }}"
 
     # Tailscale Configuration
-    tailscale_tailnet: "{{ tailscale_tailnet }}"
+    tailscale_key: "{{ tailscale_key }}"
 
   roles:
     - tier3-setup
@@ -172,13 +172,16 @@
         mode: '0644'
 
   post_tasks:
+    - name: Setup Tailscale HTTPS proxy for dashboard
+      command: tailscale serve --bg --https=18789 http://127.0.0.1:18789
+
     - name: Final Success Message
       debug:
         msg: 
           - "✅ Podman Deployment Complete!"
           - "🔑 Private Key saved locally to: ssh-keys/{{ target_hostname }}.pem"
           - "🖥️  New Hostname: {{ target_hostname }}"
-          - "🌐 Dashboard: https://{{ inventory_hostname }}:18789"
+          - "🌐 Dashboard: https://{{ ansible_facts['hostname'] }}.{{ tailscale_tailnet }}:18789"
           - "🌐 Connect using: ssh -i ssh-keys/{{ target_hostname }}.pem {{ openclaw_user }}@{{ inventory_hostname }}"
           - "🤖 LLM Provider: {{ llm_provider }} | Model: {{ llm_model }}"
           - "⚠️  Password authentication has been DISABLED."

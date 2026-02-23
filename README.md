@@ -36,7 +36,7 @@ You should be able to login using yours ssh keys (password not needed)
 
 - Sign up to https://tailscale.com/
 - Create an account 
-- Go to admin console -> DNS -> Tailnet DNS Name, note that down, will be something like `tailae3453.ts.net`
+- Go to `admin console -> Settings -> Keys` and generate a new auth key (check "Reusable" if deploying multiple servers), note it down for the deploy command
 - Download the app locally, and add your local device to your network
 
 # 3. Skills setup
@@ -68,47 +68,24 @@ git clone <this-repo>
 cd openclaw-setup
 chmod +x deploy.sh
 
-./deploy.sh \                                                                                                                                                                                                                                                                                                          
-    --target <SERVER_IP> \                                                                                                                                                                                                                                                                                               
-    --ssh-user root \                                                                                                                                                                                                                                                                                                    
-    --ssh-key ~/.ssh/<PRIVATE_SSH_KEY_FILE_NAME (from step 0)> \                                                                                                                                                                                                                                                                                        
-    --provider anthropic \                                                                                                                                                                                                                                                                                               
-    --model claude-opus-4-6 \                                                                                                                                                                                                                                                                                            
+./deploy.sh \
+    --target <SERVER_IP> \
+    --ssh-user root \
+    --ssh-key ~/.ssh/<PRIVATE_SSH_KEY_FILE_NAME (from step 0)> \
+    --provider anthropic \
+    --model claude-opus-4-6 \
     --key <ANTHROPIC_API_KEY> \
-    --tailnet <TAILNET_DNS_NAME (from step 2)> \                                                                                                                                                                                                                                                                                        
-    --github-token <GITHUB_PAT> \                                                                                                                                                                                                                                                                                        
+    --tailscale-key <TAILSCALE_AUTH_KEY (from step 2)> \
+    --github-token <GITHUB_PAT> \
     --github-user <GITHUB_USERNAME> \
     --agentmail-key <AGENTMAIL_API_KEY>
 ```
 
-This will print out some success message with key info, copy the line that looks like 
+This will automatically set up Tailscale on the server using your auth key.
 
-`🌐 Connect using: ssh -i ssh-keys/<SOME_RANDOM_WORDS>.pem openclaw@<IP_ADDRESS>`
-
-You will need the above ssh command later
-
-Add the server to your tailscale network
-
-```aiignore
-ssh root@<IP_ADDRESS>
-sudo tailscale up
-```
-
-This will bring up a login link, login to your account and authorize to add the server to your network
-
-Note down the hostname of the server
-
-`tailscale dns status`
-
-This will print something like ...
-
-```aiignore
-MagicDNS: enabled tailnet-wide (suffix = tailae3453.ts.net)
-
-Other devices in your tailnet can reach this device at ubuntu-8gb-hel1-2.tailae3453.ts.net.
-```
-
-Note down the `ubuntu-8gb-hel1-2.tailae3453.ts.net` 
+It will print out some success message with key info including:
+- The SSH command to connect: `ssh -i ssh-keys/<SOME_RANDOM_WORDS>.pem openclaw@<IP_ADDRESS>`
+- The dashboard URL: `https://<HOSTNAME>.<TAILNET>:18789`
 
 # 6. Post deployment steps
 
