@@ -2,7 +2,7 @@
 
 Based on [Next-Kick/openclaw-hardened-ansible](https://github.com/Next-Kick/openclaw-hardened-ansible) with additional adjustments for Tailscale access, skill installation, and LiteLLM proxy routing.
 
-# Set up local ssh keys
+# 0. Set up local ssh keys
 
 From terminal
 
@@ -22,7 +22,7 @@ Copy the contents of the public key, will be a file ending in `.pub` in the `~/.
    - CPX32 (8GB, 4VCPUs)
    - Location Helsinki
    - Use Ubuntu
-   - In SSH keys section, add a ssh key, copy and paste the contents of your public key in here
+   - In SSH keys section, add a ssh key, copy and paste the contents of your public key in here (copied from step 0)
    - Leave everything else the same
 5. This will spin up a new server for you, copy its IP address
 
@@ -39,14 +39,14 @@ You should be able to login using yours ssh keys (password not needed)
 - Go to admin console -> DNS -> Tailnet DNS Name, note that down, will be something like `tailae3453.ts.net`
 - Download the app locally, and add your local device to your network
 
-# Skills setup
+# 3. Skills setup
 
 Highly recommended, but not necessary, also I have not tested this without these skills
 
 - Agentmail, give your its own email address, just sign up and note down the api key
 - github, again sign up, and generate a PAT token from github that gives the agent full access to admin the repos
 
-# Local setup
+# 4. Local setup
 
 1. Clone this repo
 2. Make sure you have Ansible locally
@@ -60,7 +60,7 @@ brew install ansible
 pip install ansible
 ```
 
-# Build and set up the server
+# 5. Build and set up the server
 
 
 ```aiignore
@@ -68,10 +68,10 @@ git clone <this-repo>
 cd openclaw-setup
 chmod +x deploy.sh
 
-⏺ ./deploy.sh \                                                                                                                                                                                                                                                                                                          
+./deploy.sh \                                                                                                                                                                                                                                                                                                          
     --target <SERVER_IP> \                                                                                                                                                                                                                                                                                               
     --ssh-user root \                                                                                                                                                                                                                                                                                                    
-    --ssh-key ~/.ssh/<PRIVATE_SSH_KEY_FILE_NAME> \                                                                                                                                                                                                                                                                                        
+    --ssh-key ~/.ssh/<PRIVATE_SSH_KEY_FILE_NAME (from step 0)> \                                                                                                                                                                                                                                                                                        
     --provider anthropic \                                                                                                                                                                                                                                                                                               
     --model claude-opus-4-6 \                                                                                                                                                                                                                                                                                            
     --key <ANTHROPIC_API_KEY> \
@@ -110,7 +110,7 @@ Other devices in your tailnet can reach this device at ubuntu-8gb-hel1-2.tailae3
 
 Note down the `ubuntu-8gb-hel1-2.tailae3453.ts.net` 
 
-# Post deployment steps
+# 6. Post deployment steps
 
 
 1. Make sure your local device is also on the tailnet
@@ -133,5 +133,6 @@ Note down the `ubuntu-8gb-hel1-2.tailae3453.ts.net`
 
 This should now make your agent come alive and you can use it to set the rest of the things
 
+- Give your bot a persona
 - Ask it to set telegram
 - Ask it to set its email account
