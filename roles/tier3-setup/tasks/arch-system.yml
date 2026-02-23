@@ -71,6 +71,14 @@
     state: started
     enabled: true
 
-- name: Display Tailscale Instruction
-  debug:
-    msg: "Please run 'sudo tailscale up --ssh' manually to connect to your tailnet if not already connected."
+- name: Authenticate Tailscale
+  command: tailscale up --authkey={{ tailscale_key }}
+
+- name: Get Tailscale tailnet suffix
+  shell: tailscale status --json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['Self']['DNSName'].split('.', 1)[1].rstrip('.'))"
+  register: tailscale_dns_result
+  changed_when: false
+
+- name: Set tailscale_tailnet fact
+  set_fact:
+    tailscale_tailnet: "{{ tailscale_dns_result.stdout }}"

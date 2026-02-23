@@ -221,12 +221,6 @@
     group: "{{ openclaw_user }}"
     mode: '0600'
 
-- name: Reset Tailscale serve
-  command: tailscale serve --https=18789 off
-  become: true
-  become_user: root
-  ignore_errors: true
-
 - name: Stop Existing Stack (Clean State)
   shell: |
     podman-compose down 2>/dev/null || true
@@ -321,13 +315,5 @@
   debug:
     var: podman_ps_result.stdout_lines
   
-- name: Setup Tailscale HTTPS proxy for dashboard
-  command: tailscale serve --bg --https=18789 http://127.0.0.1:18789
-  become: true
-  become_user: root
-  register: tailscale_serve_result
-  changed_when: "'Available within your tailnet' in tailscale_serve_result.stdout or tailscale_serve_result.rc == 0"
-  failed_when: false
-
 - name: Ensure Podman Containers persist on reboot
   command: "loginctl enable-linger {{ openclaw_user }}"
